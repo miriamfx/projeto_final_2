@@ -47,19 +47,5 @@ def opt5(self, ip):
 
 
 if __name__ == '__main__':
-    options = 0
-    while sair:
-        op = options()
-        if op == '1':  # Incluir cadastrados
-            opt1()
-        if op == '2':  # Consultar Informacoes
-            opt2()
-        if op == '3':  # Agendar coletar de informacoes
-            opt3()
-        if op == '4':  # Gerar relatorio
-            opt4()
-        if op == '5':  # Limpar Base de Dados
-            opt5()
-        elif op == '6':  # Sair
-            sair = 0
+    return
 
