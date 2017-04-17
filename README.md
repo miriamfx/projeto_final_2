@@ -13,10 +13,9 @@ RESUMO
 CONFIGURAÇÃO NECESSÁRIA
 > Gerenciador
 	Para gerenciar o programa e o banco de dados e necessario utilizar o Linux e seguir os seguintes passos para instalacao.
-	1. Configurar o INTALL_PATH no arquivo settings.py
-	2. Instalar o Python (pyenv install 3.5.1)
-	3. Instalar o pysnmp (pip install pysnmp)
-	4. Instalar o snmpd (no Ubuntu: apt-get install snmpd)
+	1. Instalar o Python (pyenv install 3.5.1)
+	2. Instalar o pysnmp (pip install pysnmp)
+	3. Instalar o snmpd (no Ubuntu: apt-get install snmpd)
 
 
 > Cliente Linux
