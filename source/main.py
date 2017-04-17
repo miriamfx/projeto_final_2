@@ -20,18 +20,9 @@ class SnmpToolApp(App):
     btn4 = 'Gerar relatório'
     btn5 = 'Limpar'
     btn6 = 'Sair'
-
+    
     def cadastro(self):
-        pass
-    def consulta(self):
-        pass
-    def agendar(self):
-        pass
-    def gera_rel(self):
-        pass
-    def clean(self):
-        pass
-
+        gerente.opt1(self,ip,community)
 
 
     def build(self):
