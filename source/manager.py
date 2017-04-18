@@ -7,9 +7,9 @@ from datetime import datetime
 import re
 import main
 import dbmanager
-import dbquery
+from dbquery import sysusers_process_csv
 import time
-import datetime
+from threading import Timer
 from get import SimpleSnmp
 
 
@@ -24,7 +24,7 @@ def opt1(ip, community):
         main.resultado = ('IP ou Comunidade vazio nao sao validos')
 
 
-def opt2(self, ip, community):
+def opt2(ip, community):
     ''' Faz uma chamada no coletor manual de informacoes que ira coletar as informacoes dos Hosts.'''
     SimpleSnmp()
 
@@ -34,15 +34,13 @@ def opt3(ip, community, time1, time2):
     if time1 < time2:
         resultado = 'O tempo digitado para execução é menor que o intervalo de tempo'
     else:
-        if (time.time < time1):
-            time.sleep(time2)
-            dbmanager.reg_hosts_db()
-
-
+        while (time.time()< time2):
+            t = Timer(30.0, dbmanager.reg_hosts_db())
+            t.start()
 
 
 def opt4(self, ip):
-    pass
+    sysusers_process_csv()
 
 
 def opt5(self, ip):
@@ -56,5 +54,11 @@ def opt5(self, ip):
 
 
 if __name__ == '__main__':
-   gerente()
+    opt1().run()
+    opt2().run()
+    opt3().run()
+    opt4().run()
+    opt5().run()
+
+
 
