@@ -1,33 +1,19 @@
 from datetime import datetime
-
 import logs
 from pysnmp.hlapi import *
-
 import dbmanager
 
 
 class SimpleSnmp ():
-    def __init__(self, ip, community):
-        self.ip = ip
-        self.community = community
+    def __init__(self,ip, community):
+        ip = ip
+        community = community
 
-    def time_conversion(timestr):
-        ''' Converte o tempo em segundos para horas e minutos '''
-        if __name__ == '__main__':
-            try:
-                timesec = int(timestr)
-                timemin = (timesec / 100) / 60
-                m = timemin % 60.0
-                h = (timemin - m) / 60
-                return '{0} hora(s) e {1} minuto(s)'.format(int(h), int(m))
-            except:
-                return '0'
-
-    def GetSNMP1(self):
-        resultado = []
-        resultado = errorIndication, errorStatus, errorIndex, varBindTable = next(
+    def GetSNMP1(self,ip, community):
+        hosts_list = []
+        hosts_list = errorIndication, errorStatus, errorIndex, varBindTable = next(
             getCmd(SnmpEngine(),
-                   CommunityData(self.community),
+                   CommunityData(community),
                    UdpTransportTarget((self.ip, 161)),
                    ContextData(),
 
@@ -52,33 +38,37 @@ class SimpleSnmp ():
             else:
                 for varBindTableRow in varBindTable:
                     for name, val in varBindTableRow:
-                        if str(name) == 'sysContact':
-                            resultado.append(val)
-                        if str(name) == 'sysUpTime':
-                            resultado.append(self.time_conversion(val))
-                        if str(name) == 'sysDescr':
-                            resultado.append(val)
+                        if str(name) == self.ip:
+                            hosts_list.append(val)
+                        if str(name) == self.community:
+                            hosts_list.append(val)
                         if str(name) == 'sysObjectID':
-                            resultado.append(val)
+                            hosts_list.append(val)
+                        if str(name) == 'sysContact':
+                            hosts_list.append(val)
+                        if str(name) == 'sysUpTime':
+                            hosts_list.append(val)
+                        if str(name) == 'sysDescr':
+                            hosts_list.append(val)
+
                         if str(name) == 'sysLocation':
-                            resultado.append(val)
+                            hosts_list.append(val)
 
-            if len(resultado) == 5:
-                resultado.insert(0, self.ip)
-                resultado.append(datetime.today().strftime('%d/%m/%Y'))
-                resultado.append(datetime.today().strftime('%H:%M:%S'))
+            if len(hosts_list) == 5:
+                hosts_list.append(datetime.today().strftime('%d/%m/%Y'))
+                hosts_list.append(datetime.today().strftime('%H:%M:%S'))
                 dbmanager.reg_group1_db('{0}{1}'.format(dbmanager.DB))
-                logs.logsnmpget('SUCESSO: Dados do Grupo 1 do ID {0} e Host {1} coletados.'.format(logs.ID, logs.HOST))
+                logs.logsnmpget('SUCESSO: Dados do GetSNMP1 do IP {0} e Comunidade {1} coletados.'.format(logs.ID, logs.HOST))
 
-        return resultado
+        return hosts_list
 
-    def GetSNMP2(self):
+    def GetSNMP2(ip,community):
         resultado2 = []
         mem = ''
         resultado2 = errorIndication, errorStatus, errorIndex, varBindTable = next(
             getCmd(SnmpEngine(),
-                   CommunityData(self.community),
-                   UdpTransportTarget((self.ip, 161)),
+                   CommunityData(community),
+                   UdpTransportTarget((ip, 161)),
                    ContextData(),
 
                    ObjectType(ObjectIdentity('HOST-RESOURCES-MIB', 'hrSWRunPerfCPU', 0)),
@@ -108,13 +98,13 @@ class SimpleSnmp ():
         return varBindTable, resultado2, mem
 
 
-    def GetSNMP3(self):
+    def GetSNMP3(ip, community):
         resultado3 = []
         mem = ''
         resultado3 = errorIndication, errorStatus, errorIndex, varBindTable = next(
             getCmd(SnmpEngine(),
-                   CommunityData(self.community),
-                   UdpTransportTarget((self.ip, 161)),
+                   CommunityData(community),
+                   UdpTransportTarget((ip, 161)),
                    ContextData(),
 
                    ObjectType(ObjectIdentity('SNMPv2-MIB', 'ipForwarding', 0)),
