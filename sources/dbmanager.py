@@ -29,7 +29,7 @@ def create_tables_db(db):
 
         # Inicia a criacao das tabelas no Banco de Dados.
         c.execute("CREATE TABLE Hosts(id INTEGER PRIMARY KEY, ip TEXT, community TEXT)")
-        c.execute("CREATE TABLE GetSNMP1(id INTEGER PRIMARY KEY, sysDescr TEXT, sysContact TEXT, sysObjectID TEXT, sysLocation TEXT, sysUpTime TEXT, data DATETIME, hora TEXT)")
+        c.execute("CREATE TABLE GetSNMP1(id INTEGER PRIMARY KEY, Comunidade TEXT, sysObjectID TEXT, sysContact TEXT, sysDescr TEXT, sysLocation TEXT, sysUpTime TEXT, data DATETIME, hora TEXT)")
         c.execute("CREATE TABLE GetSNMP2(id INTEGER PRIMARY KEY, hrSWRunPerfCPU TEXT, hhrSWRunPerfMem TEXT)")
         c.execute("CREATE TABLE GetSNMP3(id INTEGER PRIMARY KEY, ipForwarding TEXT, ipInHdrErrors TEXT)")
         resultado = ('Tabelas criadas com sucesso.')
@@ -70,141 +70,6 @@ def drop_tables_db(db):
         # Insere falha no log
         logs.logdbmanager('FALHA, nao e possivel excluir tabelas do Banco de Dados {0}.'.format(db))
         print ('Erro ao deletar tabelas do Banco de Dados.')
-
-
-def reg_hosts_db(db, hosts_list):
-    ''' Insere informacoes no Banco de Dados na tabela Hosts.
-        O Banco de Dados utilizando e o definido no settings.py.
-        hosts_list contem uma lista de tuplas com ips e nomes de host no formato [(ip, nomedohost), (ip, nomedohost), ...]
-        '''
-    try:
-        con = sqlite3.connect(db)
-        c = con.cursor()
-
-        # Executa no comando INSERT para cada host da lista.
-        for data in hosts_list:
-            c.execute("INSERT INTO Hosts VALUES(NULL, '{0}', '{1}')".format(data[0], data[1]))
-
-            # Insere sucesso no log
-            logs.logdbmanager('SUCESSO ao inserir Host {0} - {1} no Banco de Dados {2}.'.format(data[1], data[0], db))
-            print ('Host {0} - {1} inserido no Banco de Dados com sucesso.'.format(data[1], data[0]))
-        con.commit()
-        c.close
-        con.close
-    except:
-        # Insere falha no log
-        logs.logdbmanager('FALHA, nao e possivel inserir Hosts no Banco de Dados {0}.'.format(db))
-        print ('Erro ao inserir hosts no Banco de Dados.')
-
-
-def del_hosts_db(db, hosts_list):
-    ''' Exclui hosts do Banco de Dados na tabela Hosts.
-        O Banco de Dados utilizando e o definido no settings.py.
-        hosts_list contem uma lista de tuplas com ips e nomes de host no formato [(ip, nomedohost), (ip, nomedohost), ...]. Pode ser passado uma lista, mas na chamada interna do programa manager e passado uma lista com uma tupla apenas.
-        '''
-    try:
-        con = sqlite3.connect(db)
-        c = con.cursor()
-
-        # Executa o comando DELETE para cada host da lista
-        for data in hosts_list:
-            c.execute("DELETE FROM Hosts WHERE ip = '{0}'".format(data[0]))
-
-            # Insere sucesso no log
-            logs.logdbmanager('SUCESSO ao excluir Host {0} - {1} do Banco de Dados {2}.'.format(data[1], data[0], db))
-            print ('Host {0} - {1} excluido do Banco de Dados com sucesso.'.format(data[1], data[0]))
-        con.commit()
-        c.close
-        con.close
-    except:
-        # Insere falha no log
-        logs.logdbmanager('FALHA, nao e possivel excluir Hosts do Banco de Dados {0}.'.format(db))
-        print ('Erro ao excluir hosts do Banco de Dados.')
-
-
-def reg_query_db(db, hosts_list):
-    ''' Recebe uma lista de hosts, executa um SELECT na tabela hosts e retorna uma lista com os IPs que nao existem na tabela Hosts.
-        O Banco de Dados utilizando e o definido no settings.py.
-        hosts_list contem lista de IPs. '''
-    try:
-        con = sqlite3.connect(db)
-        c = con.cursor()
-        l = []
-        ip = ''
-
-        # Salva a lista de hosts em uma segunda lista
-        # Cria uma copia da lista
-        for i in hosts_list:
-            l.append(i)
-        try:
-            # Passa um a um os hosts
-            for idx in hosts_list:
-                # Executa um SELECT no host para checar se ele esta cadastrado na tabela Hosts
-                for row in c.execute("SELECT * FROM Hosts WHERE ip = '{0}'".format(idx[0])):
-
-                    # Quando encontrado registro, salva o ip em uma variavel
-                    ip = row[1]
-
-                # Verifica se foi localizado um cadastro do host
-                if ip:
-                    # Insere uma entrada informando que o host sera ignorado para cadastro
-                    logs.logdbmanager('IGNORADO, {0} ja esta cadastrado no Banco de Dados {1}.'.format(ip, db))
-                    print ('{0} ja esta cadastrado, novo registro ignorado.'.format(ip))
-
-                    # Remove o hosts localizado da lista secundaria
-                    l.remove(idx)
-                    del ip
-        except:
-            pass
-        c.close
-        con.close
-    except:
-        # Insere falha no log, caso nao seja possivel consultar
-        logs.logdbmanager('FALHA, nao e possivel verificar hosts cadastrados no Banco de Dados {0}.'.format(db))
-        print ('Erro ao verificar Hosts cadastrados.')
-
-    # Retorna a lista dos nao cadastrados
-    return l
-
-
-
-def query_hosts_db(db, idx=''):
-    ''' Executa um SELECT na tabela de Hosts e retorna a lista de tupla de Hosts no formato [(id, ip, hostname), (id, ip, hostname), ...].
-        O Banco de Dados utilizando e o definido no settings.py.
-        idx contem um id de Host, se fornecido, executa a consulta somente daquele host. Padrao e vazio, que determina a consulta de todos os hosts. '''
-    l = []
-    try:
-        w = ''
-
-        # Verifica se a variavel idx tem valor, se tiver adiciona a clausula WHERE id = idx na consulta
-        if idx:
-            w = ' WHERE id = {0}'.format(idx)
-        con = sqlite3.connect(db)
-        c = con.cursor()
-
-        # Executa a consulta
-        query = c.execute("SELECT * FROM Hosts{0}".format(w))
-
-        # Percorre o resultado da consulta inserindo o resultado em uma lista de tuplas
-        for i in query:
-            l.append((i[0], i[1], i[2]))
-        con.commit()
-        c.close
-        con.close
-
-        # Inserer sucesso no log
-        logs.logdbmanager('SUCESSO, lista de hosts gerada.')
-
-        # Retorna a lista com hosts
-        return l
-    except:
-        # Inserer falha no log
-        logs.logdbmanager('FALHA, nao e possivel gerar a lista de Hosts cadastrado no Banco de Dados {0}.'.format(db))
-        print ('Falha ao gerar lista de Hosts cadastrados no Banco de Dados.')
-
-        # Retorna a lista vazia
-        return l
-
 
 def reg_GetSNMP1_db(db, hosts_list):
     ''' Grava do Dados do GetSNMP1 no Banco de Dados.
@@ -262,7 +127,7 @@ def query_GetSNMP1_db(db, idhost):
         print ('Falha ao gerar dados do Grupo 1 para o ID {0}.'.format(idhost))
 
 
-def reg_group2_db(db, hosts_list):
+def reg_GetSNMP2_db(db, hosts_list2):
     ''' Grava do Dados do Grupo 2 no Banco de Dados.
         O Banco de Dados utilizando e o definido no settings.py.
         hosts_list conte uma lista com idhost, hrSystemUsers, hrSystemProcess, data e hora.
@@ -273,11 +138,11 @@ def reg_group2_db(db, hosts_list):
 
         # Executa um INSERT na tabela Group2
         # {0}idhost, {2}hrSystemUsers, {3}hrSystemProcess, {4}data, {5}hora
-        c.execute("INSERT INTO Group2 VALUES(NULL, {0}, '{1}', '{2}', '{3}', '{4}')".format(hosts_list[0], hosts_list[2], hosts_list[3], hosts_list[4], hosts_list[5]))
+        c.execute("INSERT INTO GetSNMP2 VALUES(NULL, {0}, '{1}', '{2}', '{3}', '{4}')".format(hosts_list2[0], hosts_list2[2], hosts_list2[3], hosts_list2[4], hosts_list2[5]))
 
         # Insere sucesso no log
-        logs.logdbmanager('SUCESSO, Grupo 2 do Host id {0}, ip {1} inserido no Banco de Dados {2}.'.format(hosts_list[0], hosts_list[1], db))
-        print ('Grupo 2 do Host id {0}, ip {1} inserido no Banco de Dados com sucesso.'.format(hosts_list[0], hosts_list[1]))
+        logs.logdbmanager('SUCESSO, Grupo 2 do Host id {0}, ip {1} inserido no Banco de Dados {2}.'.format(hosts_list2[0], hosts_list2[1], db))
+        print ('Grupo 2 do Host id {0}, ip {1} inserido no Banco de Dados com sucesso.'.format(hosts_list2[0], hosts_list2[1]))
         con.commit()
         c.close
         con.close
@@ -287,7 +152,7 @@ def reg_group2_db(db, hosts_list):
         print ('Erro ao inserir hosts no Banco de Dados.')
 
 
-def query_group2_db(db, idhost):
+def query_GetSNMP2_db(db, idhost):
     ''' Executa um SELECT na tabela de Group2 e retorna uma lista com todos os dados das consulta automatica do ID fornecido.
         O Banco de Dados utilizando e o definido no settings.py.
         idhost contem o ID do host consultado.
@@ -298,7 +163,7 @@ def query_group2_db(db, idhost):
         c = con.cursor()
 
         # Executa um SELECT na tabela Group2 para o host idhost
-        query = c.execute("SELECT * FROM Group2 WHERE idhost = {0} ORDER BY data, hora".format(idhost))
+        query = c.execute("SELECT * FROM GetSNMP2 WHERE idhost = {0} ORDER BY data, hora".format(idhost))
 
         # Percorre todos os resultados da consulta e armazena em uma lista no formato de tupla
         for i in query:
@@ -316,7 +181,7 @@ def query_group2_db(db, idhost):
         print ('Falha ao gerar dados do Grupo 2 para o ID {0}.'.format(idhost))
 
 
-def reg_group3_db(db, hosts_list):
+def reg_group3_db(db, hosts_list3):
     ''' Grava do Dados do Grupo 3 no Banco de Dados.
         O Banco de Dados utilizando e o definido no settings.py.
         hosts_list contem a lista com idhost, Memory, hrStorageDescr, hrStorageSize, hrStorageUsed, data e hora '''
@@ -326,11 +191,11 @@ def reg_group3_db(db, hosts_list):
 
         # Executa um INSERT na tabela Group3
         # {0}idhost, {2}Memory, {3}hrStorageDescr, {4}hrStorageSize, {5}hrStorageUsed, {6}data, {7}hora
-        c.execute("INSERT INTO Group3 VALUES(NULL, {0}, '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')".format(hosts_list[0], hosts_list[2], hosts_list[3], hosts_list[4], hosts_list[5], hosts_list[6], hosts_list[7]))
+        c.execute("INSERT INTO Group3 VALUES(NULL, {0}, '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')".format(hosts_list3[0], hosts_list3[2], hosts_list3[3], hosts_list3[4], hosts_list3[5], hosts_list3[6], hosts_list3[7]))
 
         # Insere sucesso no log
-        logs.logdbmanager('SUCESSO, Grupo 3 do Host id {0}, ip {1} inserido no Banco de Dados {2}.'.format(hosts_list[0], hosts_list[1], db))
-        print ('Grupo 3 do Host id {0}, ip {1} inserido no Banco de Dados com sucesso.'.format(hosts_list[0], hosts_list[1]))
+        logs.logdbmanager('SUCESSO, Grupo 3 do Host id {0}, ip {1} inserido no Banco de Dados {2}.'.format(hosts_list3[0], hosts_list3[1], db))
+        print ('Grupo 3 do Host id {0}, ip {1} inserido no Banco de Dados com sucesso.'.format(hosts_list3[0], hosts_list3[1]))
         con.commit()
         c.close
         con.close
@@ -340,7 +205,7 @@ def reg_group3_db(db, hosts_list):
         print ('Erro ao inserir hosts no Banco de Dados.')
 
 
-def query_group3_db(db, idhost):
+def query_GetSNMP3_db(db, idhost):
     ''' Executa um select na tabela de Group3 e retorna uma lista com todos os dados da consulta automatica do ID fornecido
         O Banco de Dados utilizando e o definido no settings.py.
         idhost contem o ID do host consultado. '''
@@ -350,7 +215,7 @@ def query_group3_db(db, idhost):
         c = con.cursor()
 
         # Executa um SELECT na tabela Group3 para o host idhost
-        query = c.execute("SELECT * FROM Group3 WHERE idhost = {0} ORDER BY data, hora".format(idhost))
+        query = c.execute("SELECT * FROM GetSNMP3 WHERE idhost = {0} ORDER BY data, hora".format(idhost))
 
         # Percorre todos os resultados da consulta e armazena em uma lista no formato de tupla
         for i in query:
@@ -368,56 +233,6 @@ def query_group3_db(db, idhost):
         print ('Falha ao gerar dados do Grupo 3 para o ID {0}.'.format(idhost))
 
 
-def reg_group6_db(db, hosts_list):
-    ''' Grava do Dados do Grupo 6 no Banco de Dados.
-        O Banco de Dados utilizando e o definido no settings.py.
-        hosts_list contem uma lista com idhost, ipAdEntAddr, ipAdEntifIndex e ipAdEndNetMask '''
-    try:
-        con = sqlite3.connect(db)
-        c = con.cursor()
-
-        # Executa um INSERT na tabela Group3
-        # {0}idhost, {2}ipAdEntAddr, {3}ipAdEntifIndex, {4}ipAdEndNetMask
-        c.execute("INSERT INTO Group6 VALUES(NULL, {0}, '{1}', '{2}', '{3}', '{4}', '{5}')".format(hosts_list[0], hosts_list[2], hosts_list[3], hosts_list[4], hosts_list[5], hosts_list[6]))
-
-        # Insere sucesso no log
-        logs.logdbmanager('SUCESSO, Grupo 6 do Host id {0}, ip {1} inserido no Banco de Dados {2}.'.format(hosts_list[0], hosts_list[1], db))
-        print ('Grupo 6 do Host id {0}, ip {1} inserido no Banco de Dados com sucesso.'.format(hosts_list[0], hosts_list[1]))
-        con.commit()
-        c.close
-        con.close
-    except:
-        # Insere falha no log
-        logs.logdbmanager('FALHA, nao e possivel inserir dados no Grupo 6 no Banco de Dados {0}.'.format(db))
-        print ('Erro ao inserir hosts no Banco de Dados.')
-
-
-def query_group6_db(db, idhost):
-    ''' Executa um select na tabela de Group6 e retorna uma lista com todos os dados da consulta automatica do ID fornecido.
-        O Banco de Dados utilizando e o definido no settings.py.
-        idhost = ID do host consultado '''
-    try:
-        l = []
-        con = sqlite3.connect(db)
-        c = con.cursor()
-
-        # Executa um SELECT na tabela Group6 para o host idhost
-        query = c.execute("SELECT * FROM Group6 WHERE idhost = {0} ORDER BY data, hora".format(idhost))
-
-        # Percorre todos os resultados da consulta e armazena em uma lista no formato de tupla
-        for i in query:
-            l.append(i)
-        con.commit()
-        c.close
-        con.close
-
-        # Insere sucesso no log
-        logs.logdbmanager('SUCESSO, Listagem do Grupo 6 gerada.')
-        return l
-    except:
-        # Insere falha no log
-        logs.logdbmanager('FALHA ao gerar dados do Grupo 6 para o ID {0}.'.format(idhost))
-        print ('Falha ao gerar dados do Grupo 6 para o ID {0}.'.format(idhost))
 
 if __name__ == '__main__':
     l = query_hosts_db('{0}{1}'.format(DB))
