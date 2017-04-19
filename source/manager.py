@@ -12,24 +12,23 @@ import time
 from threading import Timer
 from get import SimpleSnmp
 
-
-def opt1(ip, community):
+def opt1(self,ip, community):
     ''' Cadastro manual de Hosts. '''
     l = []
-    if (main.ip != '') and (main.community != ''):
-        l.append((main.ip, main.comnunity))
+    if (self.ip != '') and (self.community != ''):
+        l.append((self.ip, self.comnunity))
         laux = dbmanager.reg_query_db('{0}{1}'.format(dbmanager.DB), l)
         dbmanager.reg_hosts_db('{0}{1}'.format(dbmanager.DB), laux)
     else:
         main.resultado = ('IP ou Comunidade vazio nao sao validos')
 
 
-def opt2(ip, community):
+def opt2(self,ip, community):
     ''' Faz uma chamada no coletor manual de informacoes que ira coletar as informacoes dos Hosts.'''
     SimpleSnmp()
 
 
-def opt3(ip, community, time1, time2):
+def opt3(self,ip, community, time1, time2):
     ''' Executa o agendamento do collector, que ira coletar informacoes de gerenciamento dos hosts cadastrados. '''
     if time1 < time2:
         resultado = 'O tempo digitado para execução é menor que o intervalo de tempo'
