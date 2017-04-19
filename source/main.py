@@ -11,6 +11,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.image import Image
 import manager
 from get import SimpleSnmp
+from manager import *
 
 class SnmpToolApp(App):
 
@@ -20,9 +21,18 @@ class SnmpToolApp(App):
     btn4 = 'Gerar relatório'
     btn5 = 'Limpar'
     btn6 = 'Sair'
-    
-    def cadastro(self):
-        gerente.opt1(self,ip,community)
+
+
+    def cadastro(self,ip, community):
+        opt1()
+    def consulta(self,ip, community):
+        opt2()
+    def agendar(self,ip,community,time1,time2):
+        opt3()
+    def gera_rel(self,ip):
+        opt4()
+    def clean(self,ip):
+        opt5()
 
 
     def build(self):
@@ -32,22 +42,6 @@ class SnmpToolApp(App):
     def set_result_form(self, resultado):
         self.root.ids.textinput_resultado.text = resultado
         print (resultado)
-
-
-
-    def cadastro(self, ip, community):
-        a = SimpleSnmp(ip, community)
-        result = a.GetSNMP1()
-        result = result + '\n IP ' + ip
-        result = result + ' e Community ' + community
-
-
-
-        self.set_result_form(result)
-
-
-
-
 
 if __name__ == "__main__":
     SnmpToolApp().run()
