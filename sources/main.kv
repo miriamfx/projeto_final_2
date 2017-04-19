@@ -1,0 +1,118 @@
+<Button>:
+    color: 1, 1, 1, 1
+    font_size: 12
+    size_hint: .1, .1
+
+FloatLayout:
+    orientation: 'horizontal'
+    canvas:
+        Color:
+            rgb: [.255, .255, .255]
+        Rectangle:
+            pos: self.pos
+            size: self.size
+    Image:
+        source:'500.png'
+        size_hint_x: 1
+        size_hint_y: .2
+        pos_hint: {'x': .10, 'top': .95}
+
+    Label:
+        text: "IP  "
+        font_size: 18
+        color: 1, 1, 1, 1
+        pos_hint: {'x': .20, 'top': .75}
+        size_hint: .1, .1
+
+    TextInput:
+        id: textinput_ip
+        text: ''
+        pos_hint: {'x': .29, 'top': .75}
+        font_size: 12
+        size_hint: .2, .1
+    Label:
+        text: "Communidade  "
+        font_size: 18
+        color: 1, 1, 1, 1
+        pos_hint: {'x': .15, 'top': .65}
+        size_hint: .1, .1
+    TextInput:
+        id: textinput_community
+        text: ''
+        pos_hint: {'x': .29, 'top': .65}
+        font_size: 12
+        size_hint: .2, .1
+    Label:
+        text: "Agendamento  "
+        font_size: 18
+        color: 1, 1, 1, 1
+        pos_hint: {'x': .15, 'top': .55}
+        size_hint: .1, .1
+    TextInput:
+        id: textinput_time1
+        text: ''
+        pos_hint: {'x': .29, 'top': .55}
+        font_size: 12
+        size_hint: .1, .1
+    TextInput:
+        id: textinput_time2
+        text: ''
+        pos_hint: {'x': .39, 'top': .55}
+        font_size: 12
+        size_hint: .1, .1
+    Label:
+        text: "Opções  "
+        font_size: 18
+        color: 1, 1, 1, 1
+        pos_hint: {'x': .45, 'top': .75}
+        size_hint: .2, .1
+	Button:
+        text: app.btn1
+        pos_hint: {'x': .63, 'top': .75}
+        on_press:app.cadastro(textinput_ip.text, textinput_community.text)
+        id: btn_1
+    Button:
+        text: app.btn2
+        pos_hint: {'x': .63, 'top': .55}
+        on_press:app.consulta(textinput_ip.text, textinput_community.text)
+        id: btn_2
+    Button:
+        text: app.btn3
+        pos_hint: {'x': .63, 'top': .65}
+        on_press:app.agendar(textinput_ip.text, textinput_community.text, textinput_time1.text, textinput_time2.text)
+        id: btn_3
+    Button:
+        text: app.btn4
+        pos_hint: {'x': .73, 'top': .65}
+        on_press:app.gera_rel(textinput_ip.text)
+        id: btn_4
+    Button:
+        text: app.btn5
+        pos_hint: {'x': .73, 'top': .65}
+        on_press:app.clean(textinput_ip.text)
+        id: btn_4
+    Button:
+        text: app.btn6
+        pos_hint: {'x': .73, 'top': .55}
+        on_press:app.sair()
+        id: btn_6
+
+    Label:
+        text: "Resultado"
+        font_size: 18
+        color: 1,1,1,1
+        pos_hint: {'x': .16, 'top': .45}
+        size_hint: .1, .1
+    TextInput:
+        id: textinput_resultado
+        text: ''
+        pos_hint: {'x': .29, 'top': .38}
+        font_size: 12
+        size_hint: .65, .30
+
+
+
+
+
+
+
