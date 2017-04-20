@@ -6,51 +6,41 @@ from sqlalchemy import delete
 import csv
 import settings
 import subprocess
-import get
-from get import SimpleSnmp
+import logs
 
-engine = create_engine('sqlite3:///snmpdb.db')
+engine = create_engine('sqlite:///snmpdb.db')
 
 base = declarative_base()
 
-class hosts(base):
+
+class Host(base):
     __tablename__ = 'hosts'
-    Column('Ip',String(15), primary_key = True),
-    Column('Comunidade', String (8)),
-    Column('IdObject', String),
-    Column('Contact', String),
-    Column('Desc', String),
-    Column('Uptime', String),
-    Column('Location', String),
-    Column('Data', String),
-    Column('Hora', String),
-    Column('hrSWRunPerfCPU', String)
-    Column('hrSWRunPerfMem', String)
-    Column('ipForwarding', String)
-    Column('ipInHdrErrors', String)
+    ip = Column(String(15), primary_key=True)
+    comunidade = Column(String(8))
+    idObject = Column(String)
+    contact = Column(String)
+    desc = Column(String)
+    uptime = Column(String)
+    location = Column(String)
+    data = Column(String)
+    hora = Column(String)
+    qtd_mem = Column(String)
+    qtd_mem_proc = Column(String)
+    ip_Errors = Column(String)
+
+    def save(self):
+        DBSession = sessionmaker(bind=engine)
+        session = DBSession()
+        session.add(self)
+        session.commit()
 
 
+    def create_db(self):
+        base.metadata.create_all(engine)
 
-    def reg_hosts_bd(self):
-        connection = engine.connect()
-        Insert = sessionmaker(bind=engine)
-        session = Insert()
-        session.add_all([ hosts(Ip=SimpleSnmp.hosts_list[0],
-                                    Comunidade=SimpleSnmp.hosts_list[1],
-                                    Contact=SimpleSnmp.hosts_list[2],
-                                    Desc=SimpleSnmp.hosts_list[3],
-                                    UpTime=SimpleSnmp.hosts_list[4],
-                                    Location=SimpleSnmp.hosts_list[5],
-                                    Data=SimpleSnmp.hosts_list[6],
-                                    Hora=SimpleSnmp.hosts_list[7],
-                                    hrSWRunPerfCPU=SimpleSnmp.hosts_list2[0],
-                                    hrSWRunPerfMem=SimpleSnmp.hosts_list2[1],
-                                    ipForwarding=SimpleSnmp.hosts_list3[0],
-                                    ipInHdrErrors=SimpleSnmp.hosts_list3[1],
-                                )
-                          ])
-        session.add(hosts)
-        connection.close()
+
+        # Insere sucesso no log
+        logs.logdbmanager('SUCESSO, arquivo {0} do Banco de Dados criado.')
 
     def gera_rel(self):
 
@@ -64,8 +54,14 @@ class hosts(base):
         cursor.close()
         subprocess.call(['Calc', 'snmp.csv'.format(settings.CSV)])
 
+        # Insere sucesso no log
+        logs.logdbmanager('SUCESSO, relatorio {0} do Banco de Dados criado.')
+
     def del_hosts_db(self):
         connection = engine.connect()
         d = delete(hosts)
         connection.execute(d)
         connection.close()
+
+        # Insere sucesso no log
+        logs.logdbmanager('SUCESSO, excluido Banco de Dados.')
