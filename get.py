@@ -30,6 +30,7 @@ class SimpleSnmp():
 
                       ),
         )
+        print (resultado)
         host = dbmanager.Host()
         if errorIndication:
             print(errorIndication)
@@ -66,7 +67,7 @@ class SimpleSnmp():
                 host.data = str (datetime.today().strftime('%d/%m/%Y'))
                 host.hora = str(datetime.today().strftime('%H:%M:%S'))
 
-                host.hora = str(val)
+
                 dbmanager.reg_group1_db('{0}{1}'.format(dbmanager.DB))
                 logs.logsnmpget(
                     'SUCESSO: Dados do GetSNMP1 do IP {0} e Comunidade {1} coletados.'.format(logs.ID, logs.HOST))
